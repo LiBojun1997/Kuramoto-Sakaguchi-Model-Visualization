@@ -36,24 +36,6 @@ for (let i = 0; i < N; i++) {
     freqs[i] = omega;
 }
 
-nSlider.addEventListener("input", function () {
-    N = parseInt(nSlider.value);
-    nValue.textContent = N;
-
-    // 重新分配phases和freqs数组
-    phases = new Array(N);
-    freqs = new Array(N);
-
-    // 初始化phases和freqs数组
-    for (let i = 0; i < N; i++) {
-        phases[i] = Math.random() * 2 * Math.PI;
-        freqs[i] = omega;
-    }
-
-    // 更新耦合距离R
-    R = Math.round(N * r);
-});
-
 function updatePhases() {
     for (let i = 0; i < N; i++) {
         let sum = 0;
@@ -105,12 +87,13 @@ function drawPhases() {
     // Draw x-axis tics
     ctx.font = "12px Arial";
     ctx.textAlign = "center";
-    for (let i = 0; i <= 100; i += 10) {
-        ctx.moveTo(50 + i * (canvas.width - 100) / 100, canvas.height - 50);
-        ctx.lineTo(50 + i * (canvas.width - 100) / 100, canvas.height - 45);
-        ctx.fillText(i, 50 + i * (canvas.width - 100) / 100, canvas.height - 30);
+    for (let i = 0; i <= N-1; i += Math.round((N-1) / 10)) {
+        ctx.moveTo(50 + i * (canvas.width - 100) / (N-1), canvas.height - 50);
+        ctx.lineTo(50 + i * (canvas.width - 100) / (N-1), canvas.height - 45);
+        ctx.fillText(i, 50 + i * (canvas.width - 100) / (N-1), canvas.height - 30);
     }
-    
+
+
     // Draw y-axis tics
     ctx.textAlign = "right";
     ctx.textBaseline = "middle";
@@ -192,6 +175,40 @@ function drawPhaseDifferences() {
     }
 }
 
+function updateXTics(canvas, ticsCount) {
+    const ctx = canvas.getContext("2d");
+    const canvasWidth = canvas.width;
+    const canvasHeight = canvas.height;
+
+    // Clear the canvas
+    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+    // Draw x-axis and y-axis
+    ctx.beginPath();
+    ctx.moveTo(50, canvasHeight - 50);
+    ctx.lineTo(canvasWidth - 50, canvasHeight - 50);
+    ctx.moveTo(50, canvasHeight - 50);
+    ctx.lineTo(50, 50);
+    ctx.stroke();
+
+    // Draw x-axis label
+    ctx.font = "bold 16px Arial";
+    ctx.fillStyle = "black";
+    ctx.textAlign = "center";
+    ctx.fillText("Position", canvasWidth / 2, canvasHeight - 10);
+
+    // Draw x-axis tics
+    ctx.font = "12px Arial";
+    ctx.textAlign = "center";
+    for (let i = 0; i <= ticsCount; i++) {
+        const x = 50 + i * (canvasWidth - 100) / ticsCount;
+        ctx.moveTo(x, canvasHeight - 50);
+        ctx.lineTo(x, canvasHeight - 45);
+        ctx.fillText(i, x, canvasHeight - 30);
+    }
+
+    ctx.stroke();
+}
 
 function animationLoop() {
     updatePhases();
@@ -202,6 +219,29 @@ function animationLoop() {
     requestAnimationFrame(animationLoop);
 }
 
+nSlider.addEventListener("input", function () {
+    N = parseInt(nSlider.value);
+    nValue.textContent = N;
+
+    // 重新分配phases和freqs数组
+    phases = new Array(N);
+    freqs = new Array(N);
+
+    // 初始化phases和freqs数组
+    for (let i = 0; i < N; i++) {
+        phases[i] = Math.random() * 2 * Math.PI;
+        freqs[i] = omega;
+    }
+
+    // 更新耦合距离R
+    R = Math.round(N * r);
+
+    // 更新x轴tic数目和相位差图像的数据
+    updateXTics(canvas, N - 1);
+    if (showPhaseDiff) {
+        updateXTics(phaseDiffCanvas, N - 2);
+    }
+});
 
 rSlider.addEventListener("input", function () {
     r = parseFloat(rSlider.value);
